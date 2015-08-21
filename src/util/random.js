@@ -9,7 +9,7 @@ export default function getRandom(a=0, b=0) {
   if (a == b) return a; //same value
   if (b < a) [a,b] = [b,a]; //lower-higher  
   
-  var random = parseInt(crypto.randomBytes(4).toString('hex'), 16);
+  var random = parseInt(crypto.randomBytes(7).toString('hex'), 16);
   if (random < 0) random = random * -1; //make it positive if negative value
    
   //get random value against range

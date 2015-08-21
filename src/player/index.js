@@ -47,12 +47,17 @@ export function play(board) {
   let enemy = me == x ? y : x;
   let play = board.plays + 1;
   
-  return openingX(board, me, play)
+  //advance game play
+  board = openingX(board, me, play)
     || openingY(board, me, play)
     || takeBlock(board,me, enemy)
     || takeWin(board,me,enemy)
     || takeBestAdjacent(board,me,enemy)
     ;
+  board.nextPlayer = enemy;
+  
+  //return new board state
+  return board;
 }
 
 
@@ -251,7 +256,8 @@ function takeBestAdjacent(board,me,enemy) {
   
   //take random opening
   if (opening.open.length) {
-    
+    board[opening.open[rnd(0,opening.open.length-1)]] = me;
+    return board;
   }
   
   //all positions taken, shouldn't happen
