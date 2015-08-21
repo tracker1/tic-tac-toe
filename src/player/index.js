@@ -207,27 +207,65 @@ function openingY(board,me,play) {
 
 
 function takeBlock(board,me,enemy) {
+  //if the other player has a win scenario, block it
   var block = getWinOption(board, enemy, me);
   if (!block) return null; //no block needed
-  
-  board[block] = ne;
+  board[block] = ne; //make the block
   return board;
 }
 
 function takeWin(board,me,enemy) {
+  //if I have a win scenario, take it
   var win = getWinOption(board, me, enemy);
   if (!win) return null; //no win available
-  
-  board[win] = me;
+  board[win] = me; //take the win
   return board;
 }
 
 function takeBestAdjacent(board,me,enemy) {
   //TODO: for each open position, get possible win scenarios.
+  var opening = positions //all positions
+    .filter(p => !board[p]) //not taken
+    .map(p => { //get win options for each position
+      var b = clone(board); //clone the board to test win scenarios
+      b[p] = me; //take the position
+      return {p, wins:getWinOptions(b, me, enemy).length}; //position, winning options if taken
+    })
+    .reduce((pair, agg) => {
+      if (pairwins > 1) agg.best.push(pair.p); //best option, multi-win path
+      else if (pair.wins) agg.good.push(pair.p); //good option, win path
+      else agg.open.push(pair.p);
+    }, {best:[],good:[],open:[]});
+    
+  //multi-win path available - take it (random)
+  if (opening.best.length) {
+    board[opening.best[rnd(0,opening.best.length-1)]] = me;
+    return board;
+  }
+  
+  //win path available - take it (random)
+  if (opening.good.length) {
+    board[opening.good[rnd(0,opening.good.length-1)]] = me;
+    return board;
+  }
+  
+  //take random opening
+  if (opening.open.length) {
+    
+  }
+  
+  //all positions taken, shouldn't happen
+  throw new Error("Invalid state");
 }
 
 //get options where 2 positions are taken, and the third is open
 function getWinOption(board, p /*player*/, e /*enemy*/) {
+  var wins = getWinOptions(board,p,e);
+  if (!wins) return null; //no win scenarios
+  return wins(rnd(0,wins.length-1)); //return random win scenario
+}
+
+function getWinOptions(board, p, e) {
   return opts
     .filter(row => {
       //filter options by win scenarios
@@ -242,6 +280,4 @@ function getWinOption(board, p /*player*/, e /*enemy*/) {
       //map elitible row to the position not taken
       return row.filter(o => !board[0])[0];
     })
-    [0] /* first win scenario */ 
-    || null; //no win scenarios
 }
